@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace WebApp
 {
+    using System.Net;
+
     [Route("api")]
     public class LoginController : Controller
     {
@@ -14,13 +16,17 @@ namespace WebApp
         }
 
         [HttpPost("sign-in")]
-        public async Task Login(string userName)
+        public async Task<IActionResult> Login(string userName)
         {
             var account = await _db.FindByUserNameAsync(userName);
             if (account != null)
             {
                 //TODO 1: Generate auth cookie for user 'userName' with external id
+
+               return Ok();
             }
+
+            return NotFound();
             //TODO 2: return 404 if user not found
         }
     }
