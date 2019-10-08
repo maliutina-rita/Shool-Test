@@ -1,9 +1,13 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace WebApp
 {
-    using System.Net;
+    using Microsoft.AspNetCore.Authentication;
+    using Microsoft.AspNetCore.Authentication.Cookies;
+
+    using System.Collections.Generic;
+    using System.Security.Claims;
 
     [Route("api")]
     public class LoginController : Controller
@@ -22,12 +26,30 @@ namespace WebApp
             if (account != null)
             {
                 //TODO 1: Generate auth cookie for user 'userName' with external id
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimsIdentity.DefaultNameClaimType, userName),
+                    new Claim(ClaimsIdentity.DefaultRoleClaimType, account.Role),
+                    new Claim("externalId", account.ExternalId)
+                };
 
-               return Ok();
+                ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType,
+                    ClaimsIdentity.DefaultRoleClaimType);
+                
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
+                return Ok();
             }
 
-            return NotFound();
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
             //TODO 2: return 404 if user not found
+            return NotFound();
+        }
+        
+        [HttpGet("unauthorizeError")]
+        public UnauthorizedResult UnauthorizeError()
+        {
+            return Unauthorized();
         }
     }
 }

@@ -69,4 +69,5 @@ namespace WebApp
                 return Task.FromResult(account?.Clone());
             }
         }
-    }}
+    }
+}
